@@ -1,0 +1,10 @@
+[Unit]
+Description=Container Registry
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/podman start -a registry_server
+ExecStop=/usr/bin/podman stop -t 15 registry_server
+
+[Install]
+WantedBy=local.target

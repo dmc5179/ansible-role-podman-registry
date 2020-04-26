@@ -1,2 +1,6 @@
 ---
 # defaults file for podman-registry
+
+registry_dir: '/opt/registry'
+registry_hostname: ''
+registry_port: 5000
