@@ -26,8 +26,8 @@ docker_registry_storage_s3_secure: false
 docker_registry_storage_s3_v4auth: false
 
 docker_registry_storage_fs_enabled: true
-docker_registry_storage_fs_root_directory: /opt/registry
-docker_registry_storage_fs_root_directory_on_host: /opt/registry
+docker_registry_storage_fs_root_directory: /var/lib/registry
+docker_registry_storage_fs_root_directory_on_host: /var/lib/registry
 
 docker_registry_readonly_mode: false
 docker_registry_delete_mode: true
@@ -41,10 +41,10 @@ docker_registry_pki_dir: ~/pki
 docker_registry_letsencrypt_enabled: false
 docker_registry_letsencrypt_dir: /etc/docker/registry
 docker_registry_letsencrypt_dir_on_host: /etc/docker/registry
-docker_registry_letsencrypt_email: freehck@freehck.ru
+docker_registry_letsencrypt_email: 'fake@fake.com'
 
-docker_registry_ssl_local_standalone_enabled: false
-docker_registry_ssl_standalone_enabled: false
+docker_registry_ssl_local_standalone_enabled: true
+docker_registry_ssl_standalone_enabled: true
 docker_registry_ssl_standalone_path: ~/certs
 docker_registry_ssl_standalone_cert: "{{docker_registry_ssl_standalone_path}}/{{ansible_fqdn}}.crt"
 docker_registry_ssl_standalone_key: "{{docker_registry_ssl_standalone_path}}/{{ansible_fqdn}}.key"

@@ -11,8 +11,8 @@ http:
   hostname: https://{{docker_registry_hostname}}
   tls:
 {% if docker_registry_pki_enabled or docker_registry_ssl_standalone_enabled or docker_registry_ssl_local_standalone_enabled %}
-    certificate: /pki/cert.pem
-    key: /pki/key.pem
+    certificate: /pki/registry.crt
+    key: /pki/registry.key
 {% endif %}
 {% if docker_registry_letsencrypt_enabled %}
     letsencrypt:

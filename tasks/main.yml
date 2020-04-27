@@ -114,18 +114,18 @@
     '{{docker_registry_container}}'
   when: docker_registry_activate
 
-- name: Install service file for podman registry
-  template:
-    src: 'podman-registry.service.j2'
-    dest: '/usr/lib/systemd/system/podman-registry.service'
-    mode: '0644'
-
-- name: Enable podman registry systemd service
-  systemd:
-    name: podman-registry
-    daemon-reload: true
-    enabled: true
-    state: started
+#- name: Install service file for podman registry
+#  template:
+#    src: 'podman-registry.service.j2'
+#    dest: '/usr/lib/systemd/system/podman-registry.service'
+#    mode: '0644'
+#
+#- name: Enable podman registry systemd service
+#  systemd:
+#    name: podman-registry
+#    daemon-reload: true
+#    enabled: true
+#    state: started
 
 # Test the connection
 # curl -u dummy:dummy https://${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/v2/_catalog
