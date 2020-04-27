@@ -20,12 +20,14 @@ docker_registry_storage_s3_enabled: false
 docker_registry_storage_s3_access_key: ''
 docker_registry_storage_s3_secret_key: ''
 docker_registry_storage_s3_region: us-east-1
-docker_registry_storage_s3_bucket: docker-registry-bucket
-docker_registry_storage_s3_regionendpoint: '{{inventory_hostname}}:8080'
-docker_registry_storage_s3_secure: false
-docker_registry_storage_s3_v4auth: false
+docker_registry_storage_s3_bucket: 
+docker_registry_storage_s3_regionendpoint: 'https://s3.us-east-1.amazonaws.com'
+docker_registry_storage_s3_secure: true
+docker_registry_storage_s3_v4auth: true
+docker_registry_storage_s3_class: standard
+docker_registry_storage_s3_root_directory: '/'
 
-docker_registry_storage_fs_enabled: true
+docker_registry_storage_fs_enabled: false
 docker_registry_storage_fs_root_directory: /var/lib/registry
 docker_registry_storage_fs_root_directory_on_host: /var/lib/registry
 

@@ -1,8 +1,7 @@
 ---
 # tasks file for podman-registry
-
 - name: Install Dependencies
-  package:
+  yum:
     name:
       - podman
       - httpd
@@ -10,6 +9,7 @@
       - mod_ssl
       - firewalld
       - skopeo
+      - libselinux-python3
     state: present
 
 - name: make directories
@@ -29,24 +29,28 @@
 - name: Upgrade pip
   pip:
     name: pip
+    executable: "{{ pip_executable }}"
     state: present
     version: '20.0.2'
 
 - name: Install passlib for htpassword
   pip:
     name: passlib
+    executable: "{{ pip_executable }}"
     state: present
     version: '1.7.2'
 
 - name: Install bcrypt for htpassword
   pip:
     name: bcrypt
+    executable: "{{ pip_executable }}"
     state: present
     version: '3.1.7'
 
 - name: Install cryptography for htpassword
   pip:
     name: cryptography
+    executable: "{{ pip_executable }}"
     state: present
     version: '2.9.2'
 
