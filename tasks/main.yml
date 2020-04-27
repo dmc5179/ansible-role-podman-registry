@@ -90,7 +90,8 @@
 
 - name: launching registry container...
   command: >
-    podman run --name '{{docker_registry_container_name}}' -p '{{docker_registry_https_port}}:5000'
+    podman run --name '{{docker_registry_container_name}}'
+    -p '{{docker_registry_https_port}}:5000'
     -v '{{docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro'
     -v '{{docker_registry_conf_dir}}/auth:/auth:ro'
     -v '{{docker_registry_conf_dir}}/pki:/pki:ro'
@@ -100,18 +101,18 @@
     '{{docker_registry_container}}'
   when: docker_registry_activate
 
-#- name: Install service file for podman registry
-#  template:
-#    src: 'podman-registry.service.j2'
-#    dest: '/usr/lib/systemd/system/podman-registry.service'
-#    mode: '0644'
-#
-#- name: Enable podman registry systemd service
-#  systemd:
-#    name: podman-registry
-#    daemon-reload: true
-#    enabled: true
-#    state: started
+- name: Install service file for podman registry
+  template:
+    src: 'podman-registry.service.j2'
+    dest: '/usr/lib/systemd/system/podman-registry.service'
+    mode: '0644'
+
+- name: Enable podman registry systemd service
+  systemd:
+    name: podman-registry
+    daemon-reload: true
+    enabled: true
+    state: started
 
 # Test the connection
 # curl -u dummy:dummy https://${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/v2/_catalog
