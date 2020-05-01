@@ -27,12 +27,12 @@ docker_registry_storage_s3_v4auth: true
 docker_registry_storage_s3_class: standard
 docker_registry_storage_s3_root_directory: '/'
 
-docker_registry_storage_fs_enabled: false
+docker_registry_storage_fs_enabled: true
 docker_registry_storage_fs_root_directory: /var/lib/registry
-docker_registry_storage_fs_root_directory_on_host: /var/lib/registry
+docker_registry_storage_fs_root_directory_on_host: /opt/registry
 
 docker_registry_readonly_mode: false
-docker_registry_delete_mode: true
+docker_registry_delete_mode: false
 docker_registry_activate: true
 
 docker_registry_pki_enabled: false
