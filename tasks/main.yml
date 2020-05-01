@@ -96,11 +96,11 @@
   command: >
     podman run --name '{{docker_registry_container_name}}'
     -p '{{docker_registry_https_port}}:5000'
-    -v '{{docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro'
-    -v '{{docker_registry_conf_dir}}/auth:/auth:ro'
-    -v '{{docker_registry_conf_dir}}/pki:/pki:ro'
-    -v '{{docker_registry_storage_fs_root_directory_on_host}}:{{docker_registry_storage_fs_root_directory}}:rw'
-    -v '{{docker_registry_letsencrypt_dir_on_host}}:{{docker_registry_letsencrypt_dir}}:rw'
+    -v '{{docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
+    -v '{{docker_registry_conf_dir}}/auth:/auth:ro,Z'
+    -v '{{docker_registry_conf_dir}}/pki:/pki:ro,Z'
+    -v '{{docker_registry_storage_fs_root_directory_on_host}}:{{docker_registry_storage_fs_root_directory}}:rw,Z'
+    -v '{{docker_registry_letsencrypt_dir_on_host}}:{{docker_registry_letsencrypt_dir}}:rw,Z'
     --detach
     '{{docker_registry_container}}'
   when: docker_registry_activate
