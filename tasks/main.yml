@@ -209,10 +209,12 @@
 
 # TODO: This test is not working
 - name: Test the registry connection
+  delegate_to: localhost
   uri:
     url: "{{ mirror_transport }}://{{ mirror_registry }}:{{ mirror_registry_port }}/v2/_catalog"
     user: '{{ docker_registry_users[0].uid }}'
     password: '{{ docker_registry_users[0].pwd }}'
     method: 'GET'
+    validate_certs: false
   tags:
     - test

@@ -62,7 +62,8 @@ docker_registry_ssl_standalone_key: "{{docker_registry_ssl_standalone_path}}/{{a
 
 air_gapped: false
 
-mirror_registry: 'localhost'
+# Change this to a name that might not be visible from the host itself
+mirror_registry: 'registry.danclark.io'
 mirror_registry_port: 5000
 mirror_transport: 'https'
 
