@@ -27,8 +27,10 @@ storage:
     enabled: {{docker_registry_delete_mode|bool}}
 {% if docker_registry_storage_s3_enabled %}
   s3:
+{% if docker_registry_storage_s3_access_key is defined %}
     accesskey: {{docker_registry_storage_s3_access_key|to_json}}
     secretkey: {{docker_registry_storage_s3_secret_key|to_json}}
+{% endif %}
     region: {{docker_registry_storage_s3_region|to_json}}
     regionendpoint: {{docker_registry_storage_s3_regionendpoint|to_json}}
     bucket: {{docker_registry_storage_s3_bucket|to_json}}
