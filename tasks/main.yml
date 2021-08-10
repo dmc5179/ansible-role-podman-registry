@@ -1,38 +1,61 @@
 ---
 # tasks file for podman-registry
-- name: Install Dependencies
+- name: Install Dependencies (RHEL 8)
   become: true
   yum:
     name:
       - podman
-#      - httpd
-#      - httpd-tools
-#      - mod_ssl
-#      - firewalld
-#      - skopeo
-#      - libselinux-python3
     state: present
+  when: >
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
+
+- name: Install Dependencies (RHEL 7)
+  become: true
+  vars:
+    ansible_python_interpreter: '/usr/bin/python2'
+  package:
+    name: 
+      - podman
+      - libselinux-python
+    state: present
+  when: >
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version < '8') 
+
+- name: Upgrade pip on RHEL 7
+  become: true
+  pip:
+    name: pip
+    executable: "{{ pip_cmd }}"
+    state: latest
+    extra_args: '{{ pip_args }}'
+  when: >
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_version < '8')
+
+#- name: debug
+#  debug:
+#    var: ansible_distribution
 
 #- fail:
 #    msg: "stop here"
 
 - name: Target User ID
-  #become: "{{ run_as_root }}"
   command: 'id -u'
   register: registry_user
 
-- name: show user
-  debug:
-    var: registry_user
+#- name: show user
+#  debug:
+#    var: registry_user
 
 - name: Target Group ID
-  #become: "{{ run_as_root }}"
   command: 'id -g'
   register: registry_group
 
-- name: show group
-  debug:
-    var: registry_group
+#- name: show group
+#  debug:
+#    var: registry_group
 
 - name: Create mirror base
   become: true
@@ -112,6 +135,35 @@
 # Configure Firewall Settings
 - include: firewall.yml
 
+# Configure SELinux to allow containers in systemd services
+- name: Set container_manage_cgroup SELinux Boolean
+  become: true
+  vars:
+    ansible_python_interpreter: '/usr/bin/python2'
+  seboolean:
+    name: container_manage_cgroup
+    state: true
+    persistent: true
+  when:
+    - ansible_selinux.status is defined and
+      ansible_selinux.status == "enabled" and
+      ansible_distribution == 'RedHat' and
+      ansible_distribution_major_version == '7'
+
+- name: Set container_manage_cgroup SELinux Boolean
+  become: true
+  sysctl:
+    name: user.max_user_namespaces
+    value: '10000'
+    state: present
+    sysctl_set: true
+    reload: true
+  when:
+    - ansible_selinux.status is defined and
+      ansible_selinux.status == "enabled" and
+      ansible_distribution == 'RedHat' and
+      ansible_distribution_major_version == '7'
+
 - name: Pull docker registry image
   become: "{{ run_as_root }}"
   podman_image:
@@ -127,26 +179,13 @@
     "containers-storage:{{ docker_registry_container }}:{{ docker_registry_container_tag }}"
   when: (air_gapped | bool)
 
-# Configure SELinux to allow containers in systemd services
-- name: Set container_manage_cgroup SELinux Boolean
-  become: true
-  seboolean:
-    name: container_manage_cgroup
-    state: true
-    persistent: true
-  when:
-    - ansible_selinux.status is defined and
-      ansible_selinux.status == "enabled" and
-      ansible_distribution == 'RedHat' and
-      ansible_distribution_major_version == '7'
-
 - name: Removing existing container
   become: "{{ run_as_root }}"
   containers.podman.podman_container:
     name: '{{docker_registry_container_name}}'
     state: absent
 
-- name: launching registry container...
+- name: launching registry container (RHEL 8)
   become: "{{ run_as_root }}"
   command: >
     podman create --name '{{docker_registry_container_name}}'
@@ -157,14 +196,38 @@
     -v '{{docker_registry_storage_fs_root_directory_on_host}}:{{docker_registry_storage_fs_root_directory}}:rw,Z'
     -v '{{docker_registry_letsencrypt_dir_on_host}}:{{docker_registry_letsencrypt_dir}}:rw,Z'
     '{{docker_registry_container}}:{{ docker_registry_container_tag }}'
-  when: docker_registry_activate
+  when: >
+    docker_registry_activate and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
+  tags:
+    - launch
+
+- name: launching registry container (RHEL 7)
+  become: "{{ run_as_root }}"
+  command: >
+    podman run --detach --name '{{docker_registry_container_name}}'
+    -p '{{docker_registry_https_port}}:5000'
+    -v '{{docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
+    -v '{{docker_registry_conf_dir}}/auth:/auth:ro,Z'
+    -v '{{docker_registry_conf_dir}}/pki:/pki:ro,Z'
+    -v '{{docker_registry_storage_fs_root_directory_on_host}}:{{docker_registry_storage_fs_root_directory}}:rw,Z'
+    -v '{{docker_registry_letsencrypt_dir_on_host}}:{{docker_registry_letsencrypt_dir}}:rw,Z'
+    '{{docker_registry_container}}:{{ docker_registry_container_tag }}'
+  when: >
+    docker_registry_activate and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version < '8')
   tags:
     - launch
 
 - name: Create systemd service for registry container
   become: '{{ run_as_root }}'
-  shell: 'podman generate systemd --container-prefix=registry --name --restart-policy always {{docker_registry_container_name}}'
+  shell: 'podman generate systemd --name --restart-policy always {{docker_registry_container_name}}'
   register: podman_systemd
+  when: >
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
 
 - name: Copy systemd service file in place
   become: true
@@ -174,20 +237,29 @@
     owner: root
     group: root
     mode: 0644
-  when: ( run_as_root | bool )
+  when: >
+    ( run_as_root | bool ) and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
 
 - name: Create user systemd service directories
   file:
     name: '{{ ansible_env.HOME }}/.config/systemd/user'
     state: directory
-  when: ( not run_as_root | bool )
+  when: >
+    ( not run_as_root | bool ) and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
 
 - name: Copy systemd service file in place
   copy:
     content: '{{ podman_systemd.stdout }}'
     dest: "{{ ansible_env.HOME }}/.config/systemd/user/podman-registry.service"
     mode: 0644
-  when: ( not run_as_root | bool )
+  when: >
+    ( not run_as_root | bool ) and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
 
 - name: Start podman registry systemd service
   become: true
@@ -196,7 +268,10 @@
     state: started
     enabled: true
     daemon_reload: true
-  when: ( run_as_root | bool )
+  when: >
+    ( run_as_root | bool ) and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
 
 - name: Start podman registry systemd service
   systemd:
@@ -205,7 +280,10 @@
     enabled: true
     daemon_reload: true
     scope: user
-  when: ( not run_as_root | bool )
+  when: >
+    ( not run_as_root | bool ) and
+    (ansible_distribution == "RedHat" and
+    ansible_distribution_major_version >= '8')
 
 # TODO: This test is not working
 - name: Test the registry connection
