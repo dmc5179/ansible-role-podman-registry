@@ -134,7 +134,7 @@
     name: container_manage_cgroup
     state: true
     persistent: true
-  when:   
+  when:
     - ansible_selinux.status is defined and
       ansible_selinux.status == "enabled" and
       ansible_distribution == 'RedHat' and

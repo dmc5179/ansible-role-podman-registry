@@ -1,4 +1,4 @@
 ---
 - hosts: all
-  roles: 
+  roles:
     - ../ansible-role-podman-registry
