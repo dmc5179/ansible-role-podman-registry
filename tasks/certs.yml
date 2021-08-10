@@ -73,21 +73,44 @@
   tags:
     - certificate
 
+- name: Cleanup existing temp space
+  become: true
+  delegate_to: localhost
+  file:
+    name: '/tmp/{{ ansible_fqdn }}.crt'
+    state: absent
+  tags:
+    - certificate
+
 - name: Copy certificate to local temp location
   fetch:
     src: "{{docker_registry_conf_dir}}/pki/registry.crt"
-    dest: '/tmp/registry.crt'
+    dest: '/tmp/{{ ansible_fqdn }}.crt'
+    owner: root
+    group: root
+    mode: 0644
     flat: true
   tags:
     - certificate
 
 - name: Move registry.crt to local trust store
   become: true
+  delegate_to: localhost
   command:
-    cmd: mv -f /tmp/registry.crt /etc/pki/ca-trust/source/anchors/registry.crt
-    creates: /etc/pki/ca-trust/source/anchors/registry.crt
+    cmd: mv -f /tmp/{{ ansible_fqdn }}.crt /etc/pki/ca-trust/source/anchors/{{ ansible_fqdn }}.crt
+    creates: /etc/pki/ca-trust/source/anchors/{{ ansible_fqdn }}.crt
 
 - name: update registry trusted ca
+  become: true
+  command: update-ca-trust
+  when:
+    (ansible_distribution == "RedHat") or
+    (ansible_distribution == "CentOS") or
+    (ansible_distribution == "Fedora")
+  tags:
+    - certificate
+
+- name: update and extract registry trusted ca
   become: true
   command: update-ca-trust extract
   when:
@@ -98,6 +121,17 @@
     - certificate
 
 - name: update local trusted ca
+  become: true
+  delegate_to: localhost
+  command: update-ca-trust
+  when:
+    (ansible_distribution == "RedHat") or
+    (ansible_distribution == "CentOS") or
+    (ansible_distribution == "Fedora")
+  tags:
+    - certificate
+
+- name: update and extract local trusted ca
   become: true
   delegate_to: localhost
   command: update-ca-trust extract
