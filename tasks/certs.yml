@@ -2,7 +2,7 @@
 - name: Generate an OpenSSL private key
   become: "{{ run_as_root }}"
   openssl_privatekey:
-    path: "{{docker_registry_conf_dir}}/pki/registry.key"
+    path: "{{ docker_registry_conf_dir }}/pki/registry.key"
     size: 4096
     type: 'RSA'
     mode: 0600
@@ -12,13 +12,13 @@
 - name: Generate an OpenSSL CSR
   become: "{{ run_as_root }}"
   openssl_csr:
-    path: "{{docker_registry_conf_dir}}/pki/registry.csr"
+    path: "{{ docker_registry_conf_dir }}/pki/registry.csr"
     country_name: 'US'
     state_or_province_name: 'Virginia'
     locality_name: 'Chantilly'
     organization_name: 'RedHat'
     organizational_unit_name: 'RedHat'
-    privatekey_path: "{{docker_registry_conf_dir}}/pki/registry.key"
+    privatekey_path: "{{ docker_registry_conf_dir}}/pki/registry.key"
     common_name: "{{ docker_registry_hostname }}"
     subject_alt_name: '{{ docker_registry_SAN }}'
     subject_alt_name_critical: true
@@ -33,9 +33,9 @@
 - name: Generate a Self Signed OpenSSL Certificate
   become: "{{ run_as_root }}"
   openssl_certificate:
-    path: "{{docker_registry_conf_dir}}/pki/registry.crt"
-    privatekey_path: "{{docker_registry_conf_dir}}/pki/registry.key"
-    csr_path: "{{docker_registry_conf_dir}}/pki/registry.csr"
+    path: "{{ docker_registry_conf_dir}}/pki/registry.crt"
+    privatekey_path: "{{ docker_registry_conf_dir}}/pki/registry.key"
+    csr_path: "{{ docker_registry_conf_dir}}/pki/registry.csr"
     provider: selfsigned
     selfsigned_version: 3
     mode: 0644
@@ -55,7 +55,7 @@
 - name: Copy self signed cert to registry's PKI trust
   become: true
   copy:
-    src: "{{docker_registry_conf_dir}}/pki/registry.crt"
+    src: "{{ docker_registry_conf_dir}}/pki/registry.crt"
     dest: '/etc/pki/ca-trust/source/anchors/'
     remote_src: true
   tags:
@@ -64,7 +64,7 @@
 - name: Copy private key to registry's host tls directory
   become: true
   copy:
-    src: "{{docker_registry_conf_dir}}/pki/registry.key"
+    src: "{{ docker_registry_conf_dir}}/pki/registry.key"
     dest: '/etc/pki/tls/private/registry.key'
     owner: root
     group: root
@@ -84,7 +84,7 @@
 
 - name: Copy certificate to local temp location
   fetch:
-    src: "{{docker_registry_conf_dir}}/pki/registry.crt"
+    src: "{{ docker_registry_conf_dir}}/pki/registry.crt"
     dest: '/tmp/{{ ansible_fqdn }}.crt'
     owner: root
     group: root

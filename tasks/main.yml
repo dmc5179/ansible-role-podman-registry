@@ -69,14 +69,14 @@
 - name: make directories
   become: true
   with_items:
-    - '{{docker_registry_conf_dir}}'
-    - '{{docker_registry_conf_dir}}/auth'
-    - '{{docker_registry_conf_dir}}/pki'
-    - '{{docker_registry_letsencrypt_dir_on_host}}'
-    - '{{docker_registry_storage_fs_root_directory_on_host}}'
+    - '{{ docker_registry_conf_dir}}'
+    - '{{ docker_registry_conf_dir}}/auth'
+    - '{{ docker_registry_conf_dir}}/pki'
+    - '{{ docker_registry_letsencrypt_dir_on_host}}'
+    - '{{ docker_registry_storage_fs_root_directory_on_host}}'
   file:
     state: directory
-    dest: '{{item}}'
+    dest: '{{ item}}'
     owner: '{{ registry_user.stdout | int }}'
     group: '{{ registry_group.stdout | int }}'
     mode: 0755
@@ -114,19 +114,19 @@
 
 - name: add passwds to auth/registry.htpasswd
   become: "{{ run_as_root }}"
-  with_items: '{{docker_registry_users}}'
+  with_items: '{{ docker_registry_users}}'
   htpasswd:
-    path: '{{docker_registry_conf_dir}}/auth/registry.htpasswd'
+    path: '{{ docker_registry_conf_dir}}/auth/registry.htpasswd'
     mode: 0600
-    name: '{{item.uid}}'
-    password: '{{item.pwd}}'
+    name: '{{ item.uid}}'
+    password: '{{ item.pwd}}'
     crypt_scheme: bcrypt
 
 - name: templatize...
   become: "{{ run_as_root }}"
   template:
     src: 'config.yml.j2'
-    dest: '{{docker_registry_conf_dir}}/config.yml'
+    dest: '{{ docker_registry_conf_dir}}/config.yml'
     mode: '0644'
 
 # Generate Certificates
@@ -182,20 +182,20 @@
 - name: Removing existing container
   become: "{{ run_as_root }}"
   containers.podman.podman_container:
-    name: '{{docker_registry_container_name}}'
+    name: '{{ docker_registry_container_name}}'
     state: absent
 
 - name: launching registry container (RHEL 8)
   become: "{{ run_as_root }}"
   command: >
-    podman create --name '{{docker_registry_container_name}}'
-    -p '{{docker_registry_https_port}}:5000'
-    -v '{{docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
-    -v '{{docker_registry_conf_dir}}/auth:/auth:ro,Z'
-    -v '{{docker_registry_conf_dir}}/pki:/pki:ro,Z'
-    -v '{{docker_registry_storage_fs_root_directory_on_host}}:{{docker_registry_storage_fs_root_directory}}:rw,Z'
-    -v '{{docker_registry_letsencrypt_dir_on_host}}:{{docker_registry_letsencrypt_dir}}:rw,Z'
-    '{{docker_registry_container}}:{{ docker_registry_container_tag }}'
+    podman create --name '{{ docker_registry_container_name}}'
+    -p '{{ docker_registry_https_port}}:5000'
+    -v '{{ docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
+    -v '{{ docker_registry_conf_dir}}/auth:/auth:ro,Z'
+    -v '{{ docker_registry_conf_dir}}/pki:/pki:ro,Z'
+    -v '{{ docker_registry_storage_fs_root_directory_on_host}}:{{ docker_registry_storage_fs_root_directory}}:rw,Z'
+    -v '{{ docker_registry_letsencrypt_dir_on_host}}:{{ docker_registry_letsencrypt_dir}}:rw,Z'
+    '{{ docker_registry_container}}:{{ docker_registry_container_tag }}'
   when: >
     docker_registry_activate and
     (ansible_distribution == "RedHat" and
@@ -206,14 +206,14 @@
 - name: launching registry container (RHEL 7)
   become: "{{ run_as_root }}"
   command: >
-    podman run --detach --name '{{docker_registry_container_name}}'
-    -p '{{docker_registry_https_port}}:5000'
-    -v '{{docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
-    -v '{{docker_registry_conf_dir}}/auth:/auth:ro,Z'
-    -v '{{docker_registry_conf_dir}}/pki:/pki:ro,Z'
-    -v '{{docker_registry_storage_fs_root_directory_on_host}}:{{docker_registry_storage_fs_root_directory}}:rw,Z'
-    -v '{{docker_registry_letsencrypt_dir_on_host}}:{{docker_registry_letsencrypt_dir}}:rw,Z'
-    '{{docker_registry_container}}:{{ docker_registry_container_tag }}'
+    podman run --detach --name '{{ docker_registry_container_name}}'
+    -p '{{ docker_registry_https_port}}:5000'
+    -v '{{ docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
+    -v '{{ docker_registry_conf_dir}}/auth:/auth:ro,Z'
+    -v '{{ docker_registry_conf_dir}}/pki:/pki:ro,Z'
+    -v '{{ docker_registry_storage_fs_root_directory_on_host}}:{{ docker_registry_storage_fs_root_directory}}:rw,Z'
+    -v '{{ docker_registry_letsencrypt_dir_on_host}}:{{ docker_registry_letsencrypt_dir}}:rw,Z'
+    '{{ docker_registry_container}}:{{ docker_registry_container_tag }}'
   when: >
     docker_registry_activate and
     (ansible_distribution == "RedHat" and
@@ -223,7 +223,7 @@
 
 - name: Create systemd service for registry container
   become: '{{ run_as_root }}'
-  shell: 'podman generate systemd --name --restart-policy always {{docker_registry_container_name}}'
+  shell: 'podman generate systemd --name --restart-policy always {{ docker_registry_container_name}}'
   register: podman_systemd
   when: >
     (ansible_distribution == "RedHat" and
