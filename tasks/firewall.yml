@@ -5,7 +5,7 @@
 - name: Enable registry port zone internal
   become: true
   firewalld:
-    port: "{{ docker_registry_https_port }}/tcp"
+    port: "{{ docker_registry_port }}/tcp"
     zone: internal
     permanent: true
     immediate: true
@@ -17,7 +17,7 @@
 - name: Enable registry port zone public
   become: true
   firewalld:
-    port: "{{ docker_registry_https_port }}/tcp"
+    port: "{{ docker_registry_port }}/tcp"
     zone: public
     permanent: true
     immediate: true

@@ -1,13 +1,18 @@
 ---
 # defaults file for podman-registry
 
+# Set to true when using role in an air-gapped environment where the container image cannot be pulled
+# from the internet
+air_gapped: false
+
 run_as_root: false
 pip_args: ''
 pip_cmd: pip3
 
 registry_base: '/opt/registry'
 
-docker_registry_https_port: 5000
+docker_registry_port: 5000
+docker_registry_transport: 'https'
 docker_registry_conf_dir: "{{ registry_base }}/etc/docker-registry"
 
 # for basic auth -- boo!
@@ -15,6 +20,7 @@ docker_registry_users:
   - uid: 'dummy'
     pwd: 'dummy'
 
+# Change this to a name that might not be visible from the host itself
 docker_registry_hostname: '{{ ansible_fqdn }}'
 docker_registry_container: 'docker.io/library/registry'
 docker_registry_container_tag: '2'
@@ -61,12 +67,5 @@ docker_registry_ssl_standalone_path: "{{ registry_base }}/certs"
 docker_registry_ssl_standalone_cert: "{{ docker_registry_ssl_standalone_path }}/{{ ansible_fqdn }}.crt"
 docker_registry_ssl_standalone_key: "{{ docker_registry_ssl_standalone_path }}/{{ ansible_fqdn }}.key"
 
-air_gapped: false
-
-# Change this to a name that might not be visible from the host itself
-mirror_registry: 'registry.danclark.io'
-mirror_registry_port: 5000
-mirror_transport: 'https'
-
 # Format of: DNS:hostname
-docker_registry_SAN: 'DNS:{{ ansible_fqdn }},DNS:{{ mirror_registry }},IP:{{ ansible_default_ipv4.address }}'
+docker_registry_SAN: 'DNS:{{ ansible_fqdn }},DNS:{{ docker_registry_hostname }},IP:{{ ansible_default_ipv4.address }}'

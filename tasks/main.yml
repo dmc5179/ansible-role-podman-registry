@@ -150,7 +150,7 @@
       ansible_distribution == 'RedHat' and
       ansible_distribution_major_version == '7'
 
-- name: Set container_manage_cgroup SELinux Boolean
+- name: Set user.max_user_namespaces kernel parameter
   become: true
   sysctl:
     name: user.max_user_namespaces
@@ -189,7 +189,7 @@
   become: "{{ run_as_root }}"
   command: >
     podman create --name '{{ docker_registry_container_name}}'
-    -p '{{ docker_registry_https_port}}:5000'
+    -p '{{ docker_registry_port}}:5000'
     -v '{{ docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
     -v '{{ docker_registry_conf_dir}}/auth:/auth:ro,Z'
     -v '{{ docker_registry_conf_dir}}/pki:/pki:ro,Z'
@@ -207,7 +207,7 @@
   become: "{{ run_as_root }}"
   command: >
     podman run --detach --name '{{ docker_registry_container_name}}'
-    -p '{{ docker_registry_https_port}}:5000'
+    -p '{{ docker_registry_port}}:5000'
     -v '{{ docker_registry_conf_dir}}/config.yml:/etc/docker/registry/config.yml:ro,Z'
     -v '{{ docker_registry_conf_dir}}/auth:/auth:ro,Z'
     -v '{{ docker_registry_conf_dir}}/pki:/pki:ro,Z'
@@ -289,7 +289,7 @@
 - name: Test the registry connection
   delegate_to: localhost
   uri:
-    url: "{{ mirror_transport }}://{{ mirror_registry }}:{{ mirror_registry_port }}/v2/_catalog"
+    url: "{{ docker_registry_transport }}://{{ mirror_registry }}:{{ docker_registry_port }}/v2/_catalog"
     user: '{{ docker_registry_users[0].uid }}'
     password: '{{ docker_registry_users[0].pwd }}'
     method: 'GET'
