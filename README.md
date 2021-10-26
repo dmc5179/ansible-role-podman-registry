@@ -6,7 +6,18 @@ Ansible role to install and configure a docker registry with podman
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Install require pip modules
+
+```
+python3 -m pip install --user -r requirements.txt
+```
+
+- Install required ansible collections
+
+```
+ansible-galaxy collection install -r requirement.yml
+```
+
 
 Role Variables
 --------------
@@ -21,11 +32,14 @@ A list of other roles hosted on Galaxy should go here, plus any details in regar
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+- hosts: localhost
+  roles:
+    - dmc5179.ansible_role_podman_registry
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+
+```
+ansible-playbook -i 'localhost' registry.yml
+```
 
 License
 -------
