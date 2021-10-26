@@ -285,11 +285,10 @@
     (ansible_distribution == "RedHat" and
     ansible_distribution_major_version >= '8')
 
-# TODO: This test is not working
 - name: Test the registry connection
   delegate_to: localhost
   uri:
-    url: "{{ docker_registry_transport }}://{{ mirror_registry }}:{{ docker_registry_port }}/v2/_catalog"
+    url: "{{ docker_registry_transport }}://{{ docker_registry_hostname }}:{{ docker_registry_port }}/v2/_catalog"
     user: '{{ docker_registry_users[0].uid }}'
     password: '{{ docker_registry_users[0].pwd }}'
     method: 'GET'
